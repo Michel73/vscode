@@ -133,6 +133,10 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 		} else {
 			this.closeOnFocusLost = this.configurationService.getValue(CLOSE_ON_FOCUS_LOST_CONFIG);
 		}
+		if (this.quickOpenWidget) {
+			this.quickOpenWidget.dispose();
+			this.quickOpenWidget = null;
+		}
 	}
 
 	navigate(next: boolean, quickNavigate?: IQuickNavigateConfiguration): void {
