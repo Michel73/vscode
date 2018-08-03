@@ -21,6 +21,7 @@ import { IConstructorSignature0, IInstantiationService } from 'vs/platform/insta
 import { IEditorService, SIDE_GROUP, ACTIVE_GROUP } from 'vs/workbench/services/editor/common/editorService';
 
 export const CLOSE_ON_FOCUS_LOST_CONFIG = 'workbench.quickOpen.closeOnFocusLost';
+export const PREFILL_CONFIG = 'workbench.quickOpen.prefill';
 
 export interface IWorkbenchQuickOpenConfiguration {
 	workbench: {

@@ -44,6 +44,7 @@ export interface IQuickOpenOptions extends IQuickOpenStyles {
 	inputAriaLabel?: string;
 	actionProvider?: IActionProvider;
 	keyboardSupport?: boolean;
+	prefill?: boolean;
 	treeCreator?: (container: HTMLElement, configuration: ITreeConfiguration, options?: ITreeOptions) => ITree;
 }
 
@@ -603,7 +604,9 @@ export class QuickOpenWidget extends Disposable implements IModelProvider {
 			this.doShowWithPrefix(param);
 		} else {
 			this.withPrefix = false;
-			this.restoreLastInput();
+			if (this.options.prefill) {
+				this.restoreLastInput();
+			}
 			this.doShowWithInput(param, options && options.autoFocus ? options.autoFocus : {});
 		}
 
