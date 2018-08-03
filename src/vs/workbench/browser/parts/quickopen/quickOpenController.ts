@@ -31,7 +31,7 @@ import { EditorInput, IWorkbenchEditorConfiguration, IEditorInput } from 'vs/wor
 import { Component } from 'vs/workbench/common/component';
 import { Event, Emitter } from 'vs/base/common/event';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
-import { QuickOpenHandler, QuickOpenHandlerDescriptor, IQuickOpenRegistry, Extensions, EditorQuickOpenEntry, CLOSE_ON_FOCUS_LOST_CONFIG } from 'vs/workbench/browser/quickopen';
+import { QuickOpenHandler, QuickOpenHandlerDescriptor, IQuickOpenRegistry, Extensions, EditorQuickOpenEntry, CLOSE_ON_FOCUS_LOST_CONFIG, PREFILL_CONFIG } from 'vs/workbench/browser/quickopen';
 import * as errors from 'vs/base/common/errors';
 import { IPickOpenEntry, IFilePickOpenEntry, IQuickOpenService, IShowOptions, IPickOpenItem, IStringPickOptions, ITypedPickOptions } from 'vs/platform/quickOpen/common/quickOpen';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
@@ -468,6 +468,7 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 				}, {
 					inputPlaceHolder: this.hasHandler(HELP_PREFIX) ? nls.localize('quickOpenInput', "Type '?' to get help on the actions you can take from here") : '',
 					keyboardSupport: false,
+					prefill: this.configurationService.getValue(PREFILL_CONFIG),
 					treeCreator: (container, config, opts) => this.instantiationService.createInstance(WorkbenchTree, container, config, opts)
 				}
 			));
