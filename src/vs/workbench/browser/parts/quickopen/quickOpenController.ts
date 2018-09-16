@@ -88,6 +88,7 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 	private readonly _onHide: Emitter<void> = this._register(new Emitter<void>());
 	get onHide(): Event<void> { return this._onHide.event; }
 
+	private prefill: boolean;
 	private isQuickOpen: boolean;
 	private lastInputValue: string;
 	private lastSubmittedInputValue: string;
@@ -136,10 +137,7 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 		} else {
 			this.closeOnFocusLost = this.configurationService.getValue(CLOSE_ON_FOCUS_LOST_CONFIG);
 		}
-		if (this.quickOpenWidget) {
-			this.quickOpenWidget.dispose();
-			this.quickOpenWidget = null;
-		}
+		this.prefill = this.configurationService.getValue(PREFILL_CONFIG);
 	}
 
 	navigate(next: boolean, quickNavigate?: IQuickNavigateConfiguration): void {
@@ -476,7 +474,6 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 				}, {
 					inputPlaceHolder: this.hasHandler(HELP_PREFIX) ? nls.localize('quickOpenInput', "Type '?' to get help on the actions you can take from here") : '',
 					keyboardSupport: false,
-					prefill: this.configurationService.getValue(PREFILL_CONFIG),
 					treeCreator: (container, config, opts) => this.instantiationService.createInstance(WorkbenchTree, container, config, opts)
 				}
 			));
@@ -515,8 +512,11 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 				// Update context
 				const registry = Registry.as<IQuickOpenRegistry>(Extensions.Quickopen);
 				this.setQuickOpenContextKey(registry.getDefaultQuickOpenHandler().contextKey);
-
-				this.quickOpenWidget.show(editorHistory, { value: this.lastSubmittedInputValue, quickNavigateConfiguration, autoFocus, inputSelection });
+				if (this.prefill) {
+					this.quickOpenWidget.show(editorHistory, { value: this.lastSubmittedInputValue, quickNavigateConfiguration, autoFocus, inputSelection });
+				} else {
+					this.quickOpenWidget.show(editorHistory, { quickNavigateConfiguration, autoFocus, inputSelection });
+				}
 			}
 		}
 
