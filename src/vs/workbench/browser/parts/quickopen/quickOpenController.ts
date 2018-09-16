@@ -88,6 +88,9 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 	private readonly _onHide: Emitter<void> = this._register(new Emitter<void>());
 	get onHide(): Event<void> { return this._onHide.event; }
 
+	private isQuickOpen: boolean;
+	private lastInputValue: string;
+	private lastSubmittedInputValue: string;
 	private quickOpenWidget: QuickOpenWidget;
 	private pickOpenWidget: QuickOpenWidget;
 	private layoutDimensions: Dimension;
@@ -463,7 +466,8 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 			this.quickOpenWidget = this._register(new QuickOpenWidget(
 				document.getElementById(this.partService.getWorkbenchElementId()),
 				{
-					onOk: () => { /* ignore */ },
+					// onOk: () => { /* ignore */ },
+					onOk: () => this.onOk(),
 					onCancel: () => { /* ignore */ },
 					onType: (value: string) => this.onType(value || ''),
 					onShow: () => this.handleOnShow(false),
@@ -512,7 +516,7 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 				const registry = Registry.as<IQuickOpenRegistry>(Extensions.Quickopen);
 				this.setQuickOpenContextKey(registry.getDefaultQuickOpenHandler().contextKey);
 
-				this.quickOpenWidget.show(editorHistory, { quickNavigateConfiguration, autoFocus, inputSelection });
+				this.quickOpenWidget.show(editorHistory, { value: this.lastSubmittedInputValue, quickNavigateConfiguration, autoFocus, inputSelection });
 			}
 		}
 
@@ -619,6 +623,12 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 		return new QuickOpenModel(entries, this.actionProvider);
 	}
 
+	private onOk(): void {
+		if (this.isQuickOpen) {
+			this.lastSubmittedInputValue = this.lastInputValue;
+		}
+	}
+
 	private onType(value: string): void {
 
 		// look for a handler
@@ -655,6 +665,10 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 
 			this.quickOpenWidget.setInput(this.getEditorHistoryWithGroupLabel(), { autoFocusFirstEntry: true });
 
+			// If quickOpen entered empty we have to clear the prefill-cache
+			this.lastInputValue = '';
+			this.isQuickOpen = true;
+
 			return;
 		}
 
@@ -662,11 +676,15 @@ export class QuickOpenController extends Component implements IQuickOpenService 
 		let resultPromiseDone = false;
 
 		if (handlerDescriptor) {
+			this.isQuickOpen = false;
 			resultPromise = this.handleSpecificHandler(handlerDescriptor, value, currentResultToken);
 		}
 
 		// Otherwise handle default handlers if no specific handler present
 		else {
+			this.isQuickOpen = true;
+			// Cache the value for prefilling the quickOpen next time is opened
+			this.lastInputValue = trimmedValue;
 			resultPromise = this.handleDefaultHandler(defaultHandlerDescriptor, value, currentResultToken);
 		}
 

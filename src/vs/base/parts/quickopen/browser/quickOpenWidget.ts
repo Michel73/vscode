@@ -62,6 +62,7 @@ export interface IShowOptions {
 	quickNavigateConfiguration?: IQuickNavigateConfiguration;
 	autoFocus?: IAutoFocus;
 	inputSelection?: IRange;
+	value?: string;
 }
 
 export class QuickOpenController extends DefaultController {
@@ -119,13 +120,10 @@ export class QuickOpenWidget extends Disposable implements IModelProvider {
 	private inputChangingTimeoutHandle: number;
 	private styles: IQuickOpenStyles;
 	private renderer: Renderer;
-	private lastInputValue: string;
-	private withPrefix: boolean;
 
 	constructor(container: HTMLElement, callbacks: IQuickOpenCallbacks, options: IQuickOpenOptions) {
 		super();
 
-		this.withPrefix = false;
 		this.isDisposed = false;
 		this.container = container;
 		this.callbacks = callbacks;
@@ -600,12 +598,10 @@ export class QuickOpenWidget extends Disposable implements IModelProvider {
 
 		// Show based on param
 		if (types.isString(param)) {
-			this.withPrefix = true;
 			this.doShowWithPrefix(param);
 		} else {
-			this.withPrefix = false;
-			if (this.options.prefill) {
-				this.restoreLastInput();
+			if (this.options.prefill && options.value) {
+				this.restoreLastInput(options.value);
 			}
 			this.doShowWithInput(param, options && options.autoFocus ? options.autoFocus : {});
 		}
@@ -620,12 +616,10 @@ export class QuickOpenWidget extends Disposable implements IModelProvider {
 		}
 	}
 
-	private restoreLastInput() {
-		if (this.lastInputValue) {
-			this.inputBox.value = this.lastInputValue;
-			this.inputBox.select();
-			this.callbacks.onType(this.lastInputValue);
-		}
+	private restoreLastInput(lastInput: string) {
+		this.inputBox.value = lastInput;
+		this.inputBox.select();
+		this.callbacks.onType(lastInput);
 	}
 
 	private doShowWithPrefix(prefix: string): void {
@@ -810,10 +804,6 @@ export class QuickOpenWidget extends Disposable implements IModelProvider {
 		this.builder.hide();
 		this.builder.domBlur();
 
-		// In case of quick search store entered value
-		if (!this.withPrefix) {
-			this.lastInputValue = this.inputBox.value;
-		}
 		// Clear input field and clear tree
 		this.inputBox.value = '';
 		this.tree.setInput(null);
